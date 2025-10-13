@@ -18,6 +18,7 @@ const corsOptions = {
   credentials: true,
 };
 
+app.use(cors(corsOptions));
 app.get("/", (req, res) => res.send("Choudhary Steel API running"));
 
 app.use("/api/users", UserRouter);
