@@ -52,13 +52,43 @@ export const createProduct = async (req, res) => {
 };
 export const updateProduct = async (req, res) => {
   const { id } = req.params;
+
   try {
-    const product = await Product.findByIdAndUpdate(id, req.body);
-    if (!product) {
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
       return res.status(404).json({ message: "Product not found" });
     }
-    res.status(200).json({ data: product, message: "Product updated" });
+
+    // Handle image upload
+    let imageUrl = existingProduct.image; // keep old one by default
+
+    if (req.file) {
+      // if new image uploaded, use new one
+      imageUrl = req.file.path;
+    } else if (req.body.currentImage) {
+      // if frontend sent current image url, keep it
+      imageUrl = req.body.currentImage;
+    }
+
+    // Update all other fields
+    const updatedData = {
+      name: req.body.name || existingProduct.name,
+      description: req.body.description || existingProduct.description,
+      category: req.body.category || existingProduct.category,
+      quantity: req.body.quantity || existingProduct.quantity,
+      price: req.body.price || existingProduct.price,
+      image: imageUrl,
+    };
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
+      new: true, // return updated document
+    });
+
+    res
+      .status(200)
+      .json({ data: updatedProduct, message: "Product updated successfully" });
   } catch (err) {
+    console.error("Error updating product:", err);
     res.status(500).json({ message: err.message });
   }
 };
