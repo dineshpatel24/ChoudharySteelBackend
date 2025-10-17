@@ -16,8 +16,9 @@ app.use(cookieParser());
 const corsOptions = {
   origin: [
     "http://localhost:3000",
-    "https://your-frontend-domain.vercel.app",
+    "https://csi-full-stack-project.vercel.app",
     "http://localhost:3001",
+    "https://twist-knot.vercel.app",
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
