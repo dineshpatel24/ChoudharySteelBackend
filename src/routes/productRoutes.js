@@ -15,7 +15,8 @@ ProductRouter.post("/", upload.single("image"), protect, createProduct);
 ProductRouter.get("/", getAllProducts);
 
 ProductRouter.get("/:id", getProduct);
-ProductRouter.put("/:id", upload.single("image"), protect, updateProduct);
 ProductRouter.delete("/:id", protect, deleteProduct);
+
+ProductRouter.put("/:id", upload.single("image"), protect, updateProduct);
 
 export default ProductRouter;

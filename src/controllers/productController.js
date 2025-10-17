@@ -59,14 +59,12 @@ export const updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Handle image upload
-    let imageUrl = existingProduct.image; // keep old one by default
+  
+    let imageUrl = existingProduct.image; 
 
     if (req.file) {
-      // if new image uploaded, use new one
       imageUrl = req.file.path;
     } else if (req.body.currentImage) {
-      // if frontend sent current image url, keep it
       imageUrl = req.body.currentImage;
     }
 
@@ -81,7 +79,7 @@ export const updateProduct = async (req, res) => {
     };
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
-      new: true, // return updated document
+      new: true, 
     });
 
     res
