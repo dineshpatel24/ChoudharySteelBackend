@@ -1,4 +1,4 @@
-import SliderImage from "../models/sliderImage.js";
+import SliderImage from "../models/SliderImages.js";
 
 // ✅ Get all slider images
 export const getAllSliderImages = async (req, res) => {
