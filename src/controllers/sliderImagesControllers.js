@@ -91,7 +91,6 @@ export const updateSliderImage = async (req, res) => {
   }
 };
 
-
 // ✅ Delete slider by ID
 export const deleteSliderImage = async (req, res) => {
   try {

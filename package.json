@@ -8,7 +8,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"No build step required\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
