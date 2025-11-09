@@ -1,11 +1,17 @@
 import Banner from "../models/Banner.js";
 
-// 🟢 Create Banner
+// Create Banner
 export const createBanner = async (req, res) => {
   try {
     const { selectedImage, title, subtitle, altText, link } = req.body;
 
-    // ✅ Support both direct uploads and pre-uploaded image selection
+    const bannerCount = await Banner.countDocuments();
+    if (bannerCount >= 2) {
+      return res
+        .status(400)
+        .json({ message: "You can only upload up to 2 banners!" });
+    }
+
     const imageUrl = req.file ? req.file.path : selectedImage || null;
 
     if (!imageUrl) {
@@ -31,7 +37,7 @@ export const createBanner = async (req, res) => {
   }
 };
 
-// 🟢 Get All Banners
+//  Get All Banners
 export const getAllBanners = async (req, res) => {
   try {
     const banners = await Banner.find().sort({ createdAt: -1 });
@@ -44,7 +50,7 @@ export const getAllBanners = async (req, res) => {
   }
 };
 
-// 🟢 Delete Banner
+//  Delete Banner
 export const deleteBanner = async (req, res) => {
   try {
     const { id } = req.params;
@@ -59,7 +65,7 @@ export const deleteBanner = async (req, res) => {
   }
 };
 
-// 🟢 Update Banner
+//  Update Banner
 export const updateBanner = async (req, res) => {
   try {
     const { id } = req.params;
