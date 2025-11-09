@@ -60,10 +60,12 @@ export const LoginUser = async (req, res) => {
 
 export const LogoutUser = async (req, res) => {
   try {
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("token", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       expires: new Date(0),
       path: "/",
     });
