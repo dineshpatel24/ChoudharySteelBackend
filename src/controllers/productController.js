@@ -1,38 +1,49 @@
 import Product from "../models/Product.js";
+
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find();
     res.status(200).json({ data: products, message: "Products found" });
-    if (!products) {
-      return res.status(404).json({ message: "No products found" });
-    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
 export const getProduct = async (req, res) => {
-  const { id } = req.params;
   try {
-    const product = await Product.findById(id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    const product = await Product.findById(req.params.id);
+
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
     res.status(200).json({ data: product, message: "Product found" });
-    console.log();
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+// ⛳ CREATE PRODUCT
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, price, category, quantity } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      quantity,
+      image,
+      images
+    } = req.body;
 
-    // Get image uploaded via multer-cloudinary
-    const image = req.file ? req.file.path : null;
+    const mainImage =
+      req.files?.image?.[0]?.path || image || null;
 
-    if (!image) {
-      return res.status(400).json({ message: "Image is required" });
+    const galleryImages =
+      (req.files?.images?.map((f) => f.path)) ||
+      (Array.isArray(images) ? images : images ? [images] : []);
+
+    if (!mainImage) {
+      return res.status(400).json({ message: "Main image is required" });
     }
 
     const product = await Product.create({
@@ -41,65 +52,89 @@ export const createProduct = async (req, res) => {
       price,
       category,
       quantity,
-      image, // save Cloudinary URL
+      image: mainImage,
+      images: galleryImages,
     });
 
-    res.status(201).json({ data: product, message: "Product created" });
-  } catch (err) {
-    console.error("Error creating product:", err);
-    res.status(500).json({ message: err.message });
-  }
-};
-export const updateProduct = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const existingProduct = await Product.findById(id);
-    if (!existingProduct) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-  
-    let imageUrl = existingProduct.image; 
-
-    if (req.file) {
-      imageUrl = req.file.path;
-    } else if (req.body.currentImage) {
-      imageUrl = req.body.currentImage;
-    }
-
-    // Update all other fields
-    const updatedData = {
-      name: req.body.name || existingProduct.name,
-      description: req.body.description || existingProduct.description,
-      category: req.body.category || existingProduct.category,
-      quantity: req.body.quantity || existingProduct.quantity,
-      price: req.body.price || existingProduct.price,
-      image: imageUrl,
-    };
-
-    const updatedProduct = await Product.findByIdAndUpdate(id, updatedData, {
-      new: true, 
-    });
-
-    res
-      .status(200)
-      .json({ data: updatedProduct, message: "Product updated successfully" });
-  } catch (err) {
-    console.error("Error updating product:", err);
-    res.status(500).json({ message: err.message });
-  }
-};
-export const deleteProduct = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const product = await Product.findByIdAndDelete(id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    res.status(200).json({
+    res.status(201).json({
+      message: "Product created successfully",
       data: product,
-      message: "Product deleted",
+    });
+  } catch (err) {
+    console.error("Create error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// ⛳ UPDATE PRODUCT
+export const updateProduct = async (req, res) => {
+  try {
+    const existing = await Product.findById(req.params.id);
+    if (!existing)
+      return res.status(404).json({ message: "Product not found" });
+
+    const {
+      name,
+      description,
+      price,
+      category,
+      quantity,
+      image,
+      images,
+    } = req.body;
+
+    // MAIN IMAGE
+    const mainImage =
+      req.files?.image?.[0]?.path ||
+      image ||
+      existing.image;
+
+    // GALLERY IMAGES
+    let galleryImages = existing.images;
+
+    if (req.files?.images) {
+      galleryImages = req.files.images.map((f) => f.path);
+    } else if (images) {
+      galleryImages = Array.isArray(images) ? images : [images];
+    }
+
+    const updated = await Product.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        description,
+        price,
+        category,
+        quantity,
+        image: mainImage,
+        images: galleryImages,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: "Product updated successfully",
+      data: updated,
+    });
+  } catch (err) {
+    console.error("Update error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+// ⛳ DELETE PRODUCT
+export const deleteProduct = async (req, res) => {
+  try {
+    const deleted = await Product.findByIdAndDelete(req.params.id);
+
+    if (!deleted)
+      return res.status(404).json({ message: "Product not found" });
+
+    res.status(200).json({
+      message: "Product deleted successfully",
+      data: deleted,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
