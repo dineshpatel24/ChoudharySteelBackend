@@ -28,6 +28,23 @@ export const protect = async (req, res, next) => {
 //   return token;
 // };
 
+export const requireSuperAdmin = async (req, res, next) => {
+  try {
+    // req.user protect se milta hai
+    const user = req.user;
+
+    if (!user || user.role !== "superadmin") {
+      return res.status(403).json({
+        message: "Access denied. Only SuperAdmin can access this route.",
+      });
+    }
+
+    next();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const sendTokenAsCookie = (res, userId) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
