@@ -20,6 +20,7 @@ import announcementRouter from "./routes/announcementRoutes.js";
 import { trackVisitor } from "./middleware/trackVisitor.js";
 import analyticsRouter from "./routes/analyticsRoutes.js";
 import themeRoutes from "./routes/theme.js";
+import testimonialRouter from "./routes/testimonialRoutes.js";
 
 connectDB();
 const app = express();
@@ -74,6 +75,7 @@ app.use("/api/social-links", SocialLinkRouter);
 app.use("/api/announcement", announcementRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/theme", themeRoutes);
+app.use("/api/testimonials", testimonialRouter);
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () =>
   console.log(`Server running on port ${PORT}`)
