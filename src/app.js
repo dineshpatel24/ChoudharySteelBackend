@@ -27,22 +27,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://admin.twist-knot.com",
+  "https://www.twist-knot.com",
+  "https://twist-knot.com",
+  "https://twist-knot.vercel.app",
+  "https://csi-full-stack-project.vercel.app",
+];
+
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "https://admin.twist-knot.com/",
-    "https://www.twist-knot.com/",
-    "https://admin.twist-knot.com/",
-    "https://csi-full-stack-project.vercel.app",
-    "https://twist-knot.vercel.app",
-    "https://twist-knot.com",
-    "https://choudharysteelbackend.onrender.com",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // mobile / curl / postman
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("CORS blocked by server: " + origin), false);
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
 };
-app.use(cors(corsOptions));
 
 app.use(cors(corsOptions));
 
