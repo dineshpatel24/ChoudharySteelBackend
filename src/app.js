@@ -32,6 +32,7 @@ const corsOptions = {
     "http://localhost:3000",
     "http://localhost:3001",
     "https://admin.twist-knot.com/",
+    "https://www.twist-knot.com/",
     "https://admin.twist-knot.com/",
     "https://csi-full-stack-project.vercel.app",
     "https://twist-knot.vercel.app",
