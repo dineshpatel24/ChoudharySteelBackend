@@ -2,8 +2,50 @@ import Product from "../models/Product.js";
 
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
-    res.status(200).json({ data: products, message: "Products found" });
+    const { search, category, minPrice, maxPrice, page = 1, limit = 100 } = req.query;
+
+    let query = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    if (category) query.category = category;
+
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    // Convert page + limit to numbers
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Query DB
+    const [products, total] = await Promise.all([
+      Product.find(query)
+        .skip(skip)
+        .limit(Number(limit)),
+
+      Product.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / Number(limit));
+
+    res.status(200).json({
+      ok: true,
+      message: "Products found",
+      data: products,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: Number(page),
+        limit: Number(limit),
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -29,27 +71,37 @@ export const createProduct = async (req, res) => {
       name,
       description,
       price,
+      originalPrice,
+      discountPercentage,
       category,
       quantity,
       image,
-      images
+      images,
     } = req.body;
 
     const mainImage =
       req.files?.image?.[0]?.path || image || null;
 
     const galleryImages =
-      (req.files?.images?.map((f) => f.path)) ||
+      req.files?.images?.map((f) => f.path) ||
       (Array.isArray(images) ? images : images ? [images] : []);
 
-    if (!mainImage) {
+    if (!mainImage)
       return res.status(400).json({ message: "Main image is required" });
-    }
+
+    // Auto-calc discount if not sent
+    const finalDiscount =
+      discountPercentage ||
+      (originalPrice
+        ? Math.round(((originalPrice - price) / originalPrice) * 100)
+        : 0);
 
     const product = await Product.create({
       name,
       description,
       price,
+      originalPrice,
+      discountPercentage: finalDiscount,
       category,
       quantity,
       image: mainImage,
@@ -78,19 +130,17 @@ export const updateProduct = async (req, res) => {
       name,
       description,
       price,
+      originalPrice,
+      discountPercentage,
       category,
       quantity,
       image,
       images,
     } = req.body;
 
-    // MAIN IMAGE
     const mainImage =
-      req.files?.image?.[0]?.path ||
-      image ||
-      existing.image;
+      req.files?.image?.[0]?.path || image || existing.image;
 
-    // GALLERY IMAGES
     let galleryImages = existing.images;
 
     if (req.files?.images) {
@@ -99,12 +149,21 @@ export const updateProduct = async (req, res) => {
       galleryImages = Array.isArray(images) ? images : [images];
     }
 
+    // auto-calc discount if needed
+    const finalDiscount =
+      discountPercentage ||
+      (originalPrice
+        ? Math.round(((originalPrice - price) / originalPrice) * 100)
+        : existing.discountPercentage);
+
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
       {
         name,
         description,
         price,
+        originalPrice,
+        discountPercentage: finalDiscount,
         category,
         quantity,
         image: mainImage,

@@ -1,9 +1,9 @@
 import express from "express";
-import { sendEnquiry } from "../controllers/enquiryController.js";
-
+import { getEnquiries, sendEnquiry } from "../controllers/enquiryController.js";
 
 const router = express.Router();
 
 router.post("/", sendEnquiry);
+router.get("/", getEnquiries);
 
 export default router;

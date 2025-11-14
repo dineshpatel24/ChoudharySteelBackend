@@ -15,12 +15,18 @@ import CategoryRouter from "./routes/category.js";
 import NewArrivelsRouter from "./routes/newArrivels.js";
 import enquiryRoute from "./routes/enquiryRoute.js";
 import bannerRouter from "./routes/bannerRoute.js";
+import SocialLinkRouter from "./routes/socialLinkRoutes.js";
+import announcementRouter from "./routes/announcementRoutes.js";
+import { trackVisitor } from "./middleware/trackVisitor.js";
+import analyticsRouter from "./routes/analyticsRoutes.js";
+import themeRoutes from "./routes/theme.js";
 
 connectDB();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 const corsOptions = {
   origin: [
     "http://localhost:3000",
@@ -46,6 +52,8 @@ app.use(cors(corsOptions));
 //     credentials: true,
 //   })
 // );
+
+app.use(trackVisitor);
 app.get("/", (req, res) => res.send("Choudhary Steel API running"));
 
 app.use("/api/users", UserRouter);
@@ -58,6 +66,10 @@ app.use("/api/categories", CategoryRouter);
 app.use("/api/new-arrivals", NewArrivelsRouter);
 app.use("/api/enquiry", enquiryRoute);
 app.use("/api/banners", bannerRouter);
+app.use("/api/social-links", SocialLinkRouter);
+app.use("/api/announcement", announcementRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/theme", themeRoutes);
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () =>
   console.log(`Server running on port ${PORT}`)
